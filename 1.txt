@@ -1,0 +1,68 @@
+package test;
+
+public class ThreadCaseDemo01 {
+	public static void main(String[] args){
+		Gun gun = new Gun(12);
+		Producer p = new Producer(gun);
+		Consumer c = new Consumer(gun);
+		new Thread(p).start();
+		new Thread(c).start();
+	}
+}
+
+class Gun{
+	int capacity;
+	int number=0;
+	boolean avaiable=false;
+	public Gun(){};
+	
+	public Gun(int capacity){
+		this.capacity = capacity;
+	}
+	
+	public synchronized void load(){
+		if(avaiable){//如果还有子弹
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println("a bullet is loaded"+ (++number));
+		avaiable = true;
+		notify();
+	}
+	
+	public synchronized void shoot(){
+		if(!avaiable){//如果还有子弹
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println("a bullet is shooted"+ number);
+		avaiable = false;
+		notify();
+	}
+}
+
+
+class Producer extends Thread {
+	Gun g=null;
+	public Producer(Gun g)  {  this.g=g; }
+	public void run()  {
+	     while(g.number<g.capacity)    g.load();		
+	}	
+}
+
+class Consumer extends Thread {
+	Gun g=null;
+	public Consumer(Gun g) {  this.g=g; }
+	public void run() {
+	     while(g.number<=g.capacity)   g.shoot();		
+	}	
+}
+
